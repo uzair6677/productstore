@@ -1,8 +1,11 @@
-import { create } from "zustand"; // ✅ named import
+import { create } from "zustand";
 
 export const userProductStore = create((set) => ({
   products: [],
+
   setProducts: (products) => set({ products }),
+
+  // ✅ CREATE
   createProduct: async (newProduct) => {
     if (!newProduct.name || !newProduct.price || !newProduct.image) {
       return {
@@ -10,6 +13,7 @@ export const userProductStore = create((set) => ({
         message: "Please provide name, price and image",
       };
     }
+
     const response = await fetch("/api/products", {
       method: "POST",
       headers: {
@@ -17,14 +21,68 @@ export const userProductStore = create((set) => ({
       },
       body: JSON.stringify(newProduct),
     });
-    const product = await response.json();
-    set((state) => ({ products: [...state.products, product] }));
+
+    const data = await response.json();
+
+    set((state) => ({
+      products: [...state.products, data],
+    }));
+
     return {
-      success: response.ok,
+      success: true,
       message: "Product created successfully",
     };
   },
-  setnewProduct: { name: "", price: "", image: "" },
-}));
 
-// const[state,setState]=useState({}) this is local state and above is global state using zustand, we can use this state in any component without prop drilling and also we can update the state from any component without passing the setState function as props.
+  // ✅ FETCH
+  fetchProducts: async () => {
+    const response = await fetch("/api/products");
+    const data = await response.json();
+
+    set({ products: data.data });
+  },
+
+  // ✅ DELETE
+  deleteProduct: async (pid) => {
+    const response = await fetch(`/api/products/${pid}`, {
+      method: "DELETE",
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return { success: false, message: data.message };
+    }
+
+    set((state) => ({
+      products: state.products.filter((p) => p._id !== pid),
+    }));
+
+    return { success: true, message: data.message };
+  },
+
+  // ✅ UPDATE (FIXED)
+  updateProduct: async (pid, updatedData) => {
+    const response = await fetch(`/api/products/${pid}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return { success: false, message: data.message };
+    }
+
+    set((state) => ({
+      products: state.products.map((p) =>
+        p._id === pid ? { ...p, ...updatedData } : p,
+      ),
+    }));
+
+    return { success: true, message: data.message }; // ✅ IMPORTANT
+  },
+}));
