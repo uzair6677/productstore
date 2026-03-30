@@ -20,7 +20,7 @@ const HomePage = () => {
 
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={10}>
           {products.map((product) => (
-            <ProductCard key={product._id} product={product} />
+            <ProductCard key={product._id} product={product} minW="500px" />
           ))}
         </SimpleGrid>
 
