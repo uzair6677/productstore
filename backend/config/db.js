@@ -1,11 +1,15 @@
+import { setServers } from "node:dns/promises";
 import mongoose from "mongoose";
-
+setServers(["1.1.1.1", "8.8.8.8"]);
 export const connectDB = async () => {
   try {
-    const con = await mongoose.connect(process.env.MONGO_URL);
-    console.log(`MongoDB connected: ${con.connection.host}`);
-  } catch (err) {
-    console.error(`Database connection error: ${err.message}`);
+    await mongoose.connect(process.env.MONGO_URL, {
+      family: 4, // Forces IPv4
+    });
+
+    console.log("mongodb connected successfully");
+  } catch (error) {
+    console.error("mongodb connection failed", error);
     process.exit(1);
   }
 };
